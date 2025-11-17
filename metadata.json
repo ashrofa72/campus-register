@@ -1,0 +1,7 @@
+{
+  "name": "Campus Check-In",
+  "description": "A smart attendance system that allows students to check in and out of campus using their mobile device's location. Attendance is only possible when within the designated school area.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
