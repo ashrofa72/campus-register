@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Coordinates } from '../types';
 
 interface GeolocationState {
@@ -15,7 +15,11 @@ export const useGeolocation = () => {
     loading: true,
   });
 
-  useEffect(() => {
+  const watcherRef = useRef<number | null>(null);
+
+  const startWatching = useCallback(() => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+
     if (!navigator.geolocation) {
       setState({
         location: null,
@@ -25,7 +29,13 @@ export const useGeolocation = () => {
       return;
     }
 
-    const watcher = navigator.geolocation.watchPosition(
+    // Clear existing watcher if any to avoid duplicates or stale watchers
+    if (watcherRef.current !== null) {
+        navigator.geolocation.clearWatch(watcherRef.current);
+        watcherRef.current = null;
+    }
+
+    watcherRef.current = navigator.geolocation.watchPosition(
       (position) => {
         setState({
           location: {
@@ -43,10 +53,10 @@ export const useGeolocation = () => {
             errorMessage = "Geolocation permission denied. Please enable it in your browser settings.";
             break;
           case err.POSITION_UNAVAILABLE:
-            errorMessage = "Location information is unavailable.";
+            errorMessage = "Location information is unavailable. Please check your GPS signal.";
             break;
           case err.TIMEOUT:
-            errorMessage = "The request to get user location timed out.";
+            errorMessage = "The request to get user location timed out. Please ensure you are in an open area.";
             break;
         }
         setState((prevState) => ({
@@ -57,15 +67,25 @@ export const useGeolocation = () => {
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
+        timeout: 30000, // Increased timeout to 30s
+        maximumAge: 10000, // Accept cached positions up to 10s old for faster initial load
       }
     );
-
-    return () => {
-      navigator.geolocation.clearWatch(watcher);
-    };
   }, []);
 
-  return state;
+  useEffect(() => {
+    startWatching();
+
+    return () => {
+      if (watcherRef.current !== null) {
+        navigator.geolocation.clearWatch(watcherRef.current);
+      }
+    };
+  }, [startWatching]);
+
+  const retry = () => {
+      startWatching();
+  };
+
+  return { ...state, retry };
 };

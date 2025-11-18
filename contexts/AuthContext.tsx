@@ -12,12 +12,16 @@ interface AuthContextType {
     signIn: (email: string, password: string) => Promise<void>;
     signUp: (displayName: string, email: string, password: string) => Promise<void>;
     signOut: () => Promise<void>;
-    reloadProfile: () => void;
+    reloadProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+interface AuthProviderProps {
+    children?: ReactNode;
+}
+
+export const AuthProvider = ({ children }: AuthProviderProps) => {
     const [user, setUser] = useState<AppUser | null>(null);
     const [loading, setLoading] = useState(true);
     const [profileLoading, setProfileLoading] = useState(false);
@@ -26,30 +30,49 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setProfileLoading(true);
         try {
             let profile = await getUserProfile(firebaseUser.uid);
+            
             if (!profile) {
-                profile = await createUserProfile(firebaseUser);
+                // Try to create profile. This might fail if displayName is missing due to race conditions
+                // in the initial signup flow if not handled in signUp().
+                try {
+                    // We attempt to create it, but if it fails due to permissions (e.g. missing required fields
+                    // that aren't available on the user object yet), we just ignore it.
+                    // The user will be redirected to ProfilePage to complete their profile anyway.
+                    profile = await createUserProfile(firebaseUser);
+                } catch (e: any) {
+                    // If permission denied, it's likely because the display name hasn't propagated 
+                    // to the user object yet or rules require fields we don't have. 
+                    // We suppress this specific error to avoid alarming logs, as the app flow handles this.
+                    if (e.code === 'permission-denied') {
+                        console.log("AuthContext: Auto-creation skipped (waiting for user input/signup flow).");
+                        profile = null; // Ensure profile is null so we don't set partial state
+                    } else {
+                        throw e;
+                    }
+                }
             }
-            setUser({ ...firebaseUser, profile });
+            
+            // Only attach profile if it exists
+            if (profile) {
+                setUser({ ...firebaseUser, profile });
+            } else {
+                setUser(firebaseUser);
+            }
         } catch (error: any) {
             // A Firebase error with code 'unavailable' indicates an offline condition
-            // where data could not be retrieved from the server or cache.
             const isOfflineError = error.code === 'unavailable' || !navigator.onLine;
 
             if (isOfflineError) {
-                console.warn(`AuthContext: Could not fetch user profile because the client is offline. The app will proceed with cached auth data if available.`);
-                // If we fail to fetch a profile due to being offline, we should not erase
-                // a profile that might already be in our state from a previous successful fetch.
+                console.warn(`AuthContext: Could not fetch user profile (offline).`);
                 setUser(prevUser => {
-                    // If a previous user state with a profile exists, preserve it.
                     if (prevUser?.profile) {
                         return { ...firebaseUser, profile: prevUser.profile };
                     }
-                    // Otherwise, set the user without a profile. This is for the initial load while offline.
                     return firebaseUser;
                 });
             } else {
-                console.error("AuthContext: Failed to fetch or create user profile.", error);
-                // For any other type of error, we can't trust the profile state.
+                // Log other errors, but don't block the user from being "logged in" (just without profile)
+                console.error("AuthContext: Failed to fetch user profile.", error);
                 setUser(firebaseUser);
             }
         } finally {
@@ -76,17 +99,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const signUp = async (displayName: string, email: string, password: string) => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        
+        // 1. Update the auth profile name
         await updateProfile(userCredential.user, { displayName });
-        // onAuthStateChanged will handle creating the user profile in firestore via fetchProfile
+        
+        // 2. Create Firestore Profile explicitly with the known displayName.
+        // This avoids the race condition where onAuthStateChanged triggers fetchProfile 
+        // before the user object has the displayName.
+        await createUserProfile(userCredential.user, { displayName });
+
+        // 3. Force a profile fetch to ensure the app state is consistent
+        await fetchProfile({ ...userCredential.user, displayName } as User);
     };
 
     const signOut = async () => {
         await firebaseSignOut(auth);
     };
 
-    const reloadProfile = () => {
+    const reloadProfile = async () => {
         if (auth.currentUser) {
-            fetchProfile(auth.currentUser);
+            await fetchProfile(auth.currentUser);
         }
     };
 
@@ -107,7 +139,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
 };
 
-// Fix: Export useAuth hook to be used by consumer components.
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (context === undefined) {

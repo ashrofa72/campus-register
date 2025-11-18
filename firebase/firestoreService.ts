@@ -1,35 +1,101 @@
+
 import { db } from './config';
-import { doc, setDoc, getDoc, collection, addDoc, query, where, orderBy, limit, getDocs, serverTimestamp } from 'firebase/firestore';
-import type { AppUser, StudentProfile, AttendanceRecord, Coordinates } from '../types';
+import { doc, setDoc, getDoc, collection, addDoc, query, where, getDocs, serverTimestamp, Timestamp } from 'firebase/firestore';
+import type { StudentProfile, AttendanceRecord, Coordinates } from '../types';
 import type { User } from 'firebase/auth';
 
 export const getUserProfile = async (uid: string): Promise<StudentProfile | null> => {
     const userDocRef = doc(db, 'students', uid);
-    const userDocSnap = await getDoc(userDocRef);
+    try {
+        const userDocSnap = await getDoc(userDocRef);
 
-    if (userDocSnap.exists()) {
-        return userDocSnap.data() as StudentProfile;
-    } else {
-        return null;
+        if (userDocSnap.exists()) {
+            return userDocSnap.data() as StudentProfile;
+        } else {
+            return null;
+        }
+    } catch (error: any) {
+        // If Firestore rules prevent reading a non-existent document (e.g. checking resource.data),
+        // a permission-denied error is thrown. We treat this as "profile not found".
+        if (error.code === 'permission-denied') {
+            return null;
+        }
+        throw error;
     }
 };
 
-export const createUserProfile = async (user: User): Promise<StudentProfile> => {
+export const createUserProfile = async (user: User, additionalData?: Partial<StudentProfile>): Promise<StudentProfile> => {
     const userDocRef = doc(db, 'students', user.uid);
-    const newProfile: StudentProfile = {
+    
+    // 1. Merge basic data
+    const mergedData: any = {
         uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
+        email: user.email || "",
         createdAt: serverTimestamp(),
+        ...additionalData
     };
-    await setDoc(userDocRef, newProfile);
-    return newProfile;
+
+    // 2. Apply defaults SAFELY. 
+    // We check if fields are missing or null in the *merged result* and fill them.
+    // This protects against 'additionalData' explicitly passing null for required fields.
+    
+    if (!mergedData.displayName) {
+        mergedData.displayName = user.displayName || mergedData.studentName || "Student";
+    }
+
+    if (!mergedData.studentName) {
+        mergedData.studentName = mergedData.displayName;
+    }
+
+    // Ensure photoURL isn't accidentally nulled if the user has one in Auth, 
+    // unless explicitly set to null in additionalData (which we respect if provided).
+    // However, if additionalData didn't provide it, fall back to user.photoURL.
+    if (mergedData.photoURL === undefined) {
+         mergedData.photoURL = user.photoURL || null;
+    }
+
+    // Filter out undefined values to prevent Firestore errors
+    const cleanData = Object.entries(mergedData).reduce((acc, [key, value]) => {
+        if (value !== undefined) {
+            (acc as any)[key] = value;
+        }
+        return acc;
+    }, {} as any);
+
+    // Use merge: true to prevent overwriting data if this runs concurrently with another update
+    await setDoc(userDocRef, cleanData, { merge: true });
+    
+    // Return the profile with a client-side Timestamp to prevent UI crashes 
+    // when accessing .toDate() before a re-fetch occurs.
+    return {
+        ...cleanData,
+        createdAt: Timestamp.now() 
+    } as unknown as StudentProfile;
 };
 
 export const updateUserProfile = async (uid:string, data: Partial<StudentProfile>): Promise<void> => {
     const userDocRef = doc(db, 'students', uid);
-    await setDoc(userDocRef, data, { merge: true });
+    // Ensure UID is included in the data payload.
+    const payload = {
+        ...data,
+        uid: uid
+    };
+    
+    // Sync display name if student name is updated but display name is missing/null
+    // This fixes cases where displayName might end up as null in the database
+    if (payload.studentName && !payload.displayName) {
+        payload.displayName = payload.studentName;
+    }
+    
+    // Filter out undefined values
+    const cleanPayload = Object.entries(payload).reduce((acc, [key, value]) => {
+        if (value !== undefined) {
+            (acc as any)[key] = value;
+        }
+        return acc;
+    }, {} as any);
+
+    await setDoc(userDocRef, cleanPayload, { merge: true });
 };
 
 
@@ -49,11 +115,6 @@ export const getLastAttendance = async (uid: string): Promise<AttendanceRecord |
     const attendanceCollectionRef = collection(db, 'attendance');
     // NOTE: The query was modified to remove `orderBy` and `limit`. This avoids a Firestore error
     // that occurs when a composite index is not created for the query.
-    // The trade-off is that we now fetch all of a user's attendance records and sort
-    // on the client to find the latest one. This is less efficient and may
-    // increase read costs and latency. The ideal solution is to create the
-    // required index in the Firebase console.
-    // Index details: Collection 'attendance', Fields: 'uid' (Ascending), 'timestamp' (Descending).
     const q = query(
       attendanceCollectionRef, 
       where("uid", "==", uid)
@@ -82,11 +143,7 @@ export const getLastAttendance = async (uid: string): Promise<AttendanceRecord |
 
 export const getAttendanceHistory = async (uid: string): Promise<AttendanceRecord[]> => {
     const attendanceCollectionRef = collection(db, 'attendance');
-    // NOTE: The query was modified to remove `orderBy`. This avoids a Firestore error
-    // that occurs when a composite index is not created for the query.
-    // Sorting is now handled on the client-side. The ideal solution is to create
-    // the required index in the Firebase console.
-    // Index details: Collection 'attendance', Fields: 'uid' (Ascending), 'timestamp' (Descending).
+    // NOTE: The query was modified to remove `orderBy`.
     const q = query(
       attendanceCollectionRef, 
       where("uid", "==", uid)

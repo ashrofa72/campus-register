@@ -2,13 +2,14 @@ import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
 interface HeaderProps {
-    currentPage: 'checkin' | 'history';
-    setCurrentPage: (page: 'checkin' | 'history') => void;
+    currentPage: 'checkin' | 'history' | 'profile';
+    setCurrentPage: (page: 'checkin' | 'history' | 'profile') => void;
 }
 
 export default function Header({ currentPage, setCurrentPage }: HeaderProps) {
     const { user, signOut } = useAuth();
     const displayName = user?.profile?.studentName || user?.displayName;
+    const photoURL = user?.profile?.photoURL || user?.photoURL;
 
     const navLinkClasses = (page: 'checkin' | 'history') => 
         `px-3 py-1.5 text-sm font-semibold rounded-md transition-colors ${
@@ -35,14 +36,18 @@ export default function Header({ currentPage, setCurrentPage }: HeaderProps) {
                 </div>
                 {user && (
                     <div className="flex items-center space-x-4">
-                        <div className="flex items-center space-x-2">
+                        <button 
+                            onClick={() => setCurrentPage('profile')}
+                            className={`flex items-center space-x-2 p-1.5 rounded-lg transition-colors ${currentPage === 'profile' ? 'bg-slate-100 ring-2 ring-blue-500' : 'hover:bg-slate-100'}`}
+                            title="Edit Profile"
+                        >
                              <img 
-                                src={user.photoURL || `https://ui-avatars.com/api/?name=${displayName}&background=random`} 
+                                src={photoURL || `https://ui-avatars.com/api/?name=${displayName}&background=random`} 
                                 alt={displayName || 'User Avatar'}
-                                className="w-8 h-8 rounded-full"
+                                className="w-8 h-8 rounded-full object-cover bg-slate-200"
                             />
                             <span className="text-sm font-medium text-slate-600 hidden sm:block">{displayName}</span>
-                        </div>
+                        </button>
                         <button
                             onClick={signOut}
                             className="px-3 py-1.5 text-sm font-semibold text-white bg-red-500 rounded-md shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"

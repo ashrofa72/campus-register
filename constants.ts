@@ -6,4 +6,4 @@ export const SCHOOL_COORDINATES: Coordinates = {
   longitude: 32.72355294496741,
 };
 
-export const ALLOWED_RADIUS_METERS: number = 100; // 100 meters radius
+export const ALLOWED_RADIUS_METERS: number = 10; // 10 meters radius

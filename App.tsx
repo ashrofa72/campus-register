@@ -13,7 +13,7 @@ import AttendanceHistoryPage from './pages/AttendanceHistoryPage';
 export default function App() {
     const { user, loading, profileLoading } = useAuth();
     const isOnline = useOnlineStatus();
-    const [currentPage, setCurrentPage] = useState<'checkin' | 'history'>('checkin');
+    const [currentPage, setCurrentPage] = useState<'checkin' | 'history' | 'profile'>('checkin');
 
     const renderContent = () => {
         if (loading || profileLoading) {
@@ -46,6 +46,12 @@ export default function App() {
                 <main className="flex-grow w-full flex flex-col items-center justify-center p-4">
                     {currentPage === 'checkin' && <CheckInPage />}
                     {currentPage === 'history' && <AttendanceHistoryPage />}
+                    {currentPage === 'profile' && (
+                        <ProfilePage 
+                            isEditing={true} 
+                            onCancel={() => setCurrentPage('checkin')} 
+                        />
+                    )}
                     <footer className="text-center mt-8 text-sm text-slate-400">
                         <p>&copy; {new Date().getFullYear()} Campus Check-In. All rights reserved.</p>
                     </footer>
