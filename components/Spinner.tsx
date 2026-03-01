@@ -6,7 +6,7 @@ const Spinner = ({ className = '' }: { className?: string }) => (
         xmlns="http://www.w3.org/2000/svg" 
         fill="none" 
         viewBox="0 0 24 24"
-        aria-label="Loading"
+        aria-label="جاري التحميل"
         role="status"
     >
         <circle 

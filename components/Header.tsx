@@ -13,66 +13,66 @@ export default function Header({ currentPage, setCurrentPage }: HeaderProps) {
     const isAdmin = user?.profile?.role === 'admin';
 
     const navLinkClasses = (page: 'checkin' | 'history' | 'admin') => 
-        `px-3 py-1.5 text-sm font-semibold rounded-md transition-colors ${
+        `px-4 py-2 text-sm font-bold rounded-lg transition-all duration-200 ${
             currentPage === page 
-            ? 'bg-blue-500 text-white shadow-sm' 
-            : 'text-slate-600 hover:bg-slate-200'
+            ? 'bg-blue-600 text-white shadow-md scale-105' 
+            : 'text-slate-600 hover:bg-white hover:text-blue-600 hover:shadow-sm'
         }`;
 
     return (
-        <header className="w-full p-4 bg-white/80 backdrop-blur-sm shadow-sm z-10 sticky top-0">
-            <div className="max-w-4xl mx-auto flex justify-between items-center">
-                <div className="flex items-center space-x-4">
-                    <div className="text-xl font-bold text-slate-800">
-                       Campus Check-In
+        <header className="w-full py-4 px-6 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm z-50 sticky top-0">
+            <div className="max-w-6xl mx-auto flex justify-between items-center gap-6">
+                <div className="flex items-center gap-8">
+                    <div className="text-2xl font-black text-blue-600 tracking-tight">
+                       Campus <span className="text-slate-800">Check-In</span>
                     </div>
-                     <nav className="hidden sm:flex items-center space-x-2 bg-slate-100 p-1 rounded-lg">
+                     <nav className="hidden md:flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl border border-slate-200">
                         <button onClick={() => setCurrentPage('checkin')} className={navLinkClasses('checkin')}>
-                            Check-In
+                            تسجيل الحضور
                         </button>
                         <button onClick={() => setCurrentPage('history')} className={navLinkClasses('history')}>
-                            History
+                            السجل
                         </button>
                         {isAdmin && (
                             <button onClick={() => setCurrentPage('admin')} className={navLinkClasses('admin')}>
-                                Admin
+                                الإدارة
                             </button>
                         )}
                     </nav>
                 </div>
                 {user && (
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center gap-4">
                         <button 
                             onClick={() => setCurrentPage('profile')}
-                            className={`flex items-center space-x-2 p-1.5 rounded-lg transition-colors ${currentPage === 'profile' ? 'bg-slate-100 ring-2 ring-blue-500' : 'hover:bg-slate-100'}`}
-                            title="Edit Profile"
+                            className={`flex items-center gap-3 px-3 py-1.5 rounded-xl transition-all duration-200 ${currentPage === 'profile' ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-200' : 'hover:bg-slate-100 text-slate-600'}`}
+                            title="تعديل الملف الشخصي"
                         >
                              <img 
                                 src={photoURL || `https://ui-avatars.com/api/?name=${displayName}&background=random`} 
                                 alt={displayName || 'User Avatar'}
-                                className="w-8 h-8 rounded-full object-cover bg-slate-200"
+                                className="w-9 h-9 rounded-full object-cover border-2 border-white shadow-sm bg-slate-200"
                             />
-                            <span className="text-sm font-medium text-slate-600 hidden sm:block">{displayName}</span>
+                            <span className="text-sm font-bold hidden lg:block">{displayName}</span>
                         </button>
                         <button
                             onClick={signOut}
-                            className="px-3 py-1.5 text-sm font-semibold text-white bg-red-500 rounded-md shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                            className="px-4 py-2 text-sm font-bold text-white bg-red-500 rounded-xl shadow-sm hover:bg-red-600 hover:shadow-md active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                         >
-                            Sign Out
+                            تسجيل الخروج
                         </button>
                     </div>
                 )}
             </div>
-             <nav className="sm:hidden flex items-center space-x-2 bg-slate-100 p-1 rounded-lg mt-4 justify-center">
+             <nav className="md:hidden flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl border border-slate-200 mt-4 justify-center">
                 <button onClick={() => setCurrentPage('checkin')} className={`${navLinkClasses('checkin')} flex-1`}>
-                    Check-In
+                    تسجيل الحضور
                 </button>
                 <button onClick={() => setCurrentPage('history')} className={`${navLinkClasses('history')} flex-1`}>
-                    History
+                    السجل
                 </button>
                 {isAdmin && (
                     <button onClick={() => setCurrentPage('admin')} className={`${navLinkClasses('admin')} flex-1`}>
-                        Admin
+                        الإدارة
                     </button>
                 )}
             </nav>

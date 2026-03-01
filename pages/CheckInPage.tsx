@@ -34,25 +34,17 @@ const ProximityIndicator = ({ distance }: { distance: number }) => {
     const circumference = normalizedRadius * 2 * Math.PI;
     const strokeDashoffset = circumference - progress * circumference;
 
-    // Dynamic Styling
-    let colorClass = "text-orange-500"; // Default approaching color
-    let statusText = "Approaching";
-
-    if (distance <= targetRadius) {
-        colorClass = "text-green-500";
-        statusText = "In Zone";
-    } else if (distance > 30) {
-        colorClass = "text-red-400";
-        statusText = "Too Far";
-    }
+    // Center Text
+    const colorClass = distance <= targetRadius ? "text-green-500" : (distance > 30 ? "text-red-500" : "text-orange-500");
+    const statusText = distance <= targetRadius ? "داخل المنطقة" : (distance > 30 ? "بعيد جداً" : "قريب من المنطقة");
 
     return (
-        <div className="relative flex items-center justify-center w-40 h-40 transition-all duration-300">
+        <div className="relative flex items-center justify-center w-44 h-44 transition-all duration-500">
             {/* SVG Container */}
             <svg
                 height={radius * 2}
                 width={radius * 2}
-                className="transform -rotate-90"
+                className="transform -rotate-90 drop-shadow-sm"
             >
                 {/* Background Track */}
                 <circle
@@ -75,16 +67,19 @@ const ProximityIndicator = ({ distance }: { distance: number }) => {
                     r={normalizedRadius}
                     cx={radius}
                     cy={radius}
-                    className={`${colorClass} transition-all duration-500 ease-out`}
+                    className={`${colorClass} transition-all duration-700 ease-in-out`}
                 />
             </svg>
             
             {/* Center Text */}
-            <div className="absolute flex flex-col items-center justify-center text-slate-700">
-                <span className="text-3xl font-bold tracking-tight">
-                    {distance.toFixed(1)}<span className="text-sm font-normal text-slate-400">m</span>
-                </span>
-                <span className={`text-[10px] uppercase font-bold tracking-widest mt-1 ${colorClass}`}>
+            <div className="absolute flex flex-col items-center justify-center text-slate-800">
+                <div className="flex items-baseline gap-0.5">
+                    <span className="text-4xl font-black tracking-tighter">
+                        {distance.toFixed(1)}
+                    </span>
+                    <span className="text-sm font-bold text-slate-400">متر</span>
+                </div>
+                <span className={`text-[11px] uppercase font-black tracking-widest mt-2 px-2 py-0.5 rounded-full bg-white shadow-sm border border-slate-100 ${colorClass}`}>
                     {statusText}
                 </span>
             </div>
@@ -160,14 +155,14 @@ export default function CheckInPage() {
         if (!user || !location) return;
 
         if (!navigator.onLine) {
-            alert('You seem to be offline. Please check your connection to record your attendance.');
+            alert('يبدو أنك غير متصل بالإنترنت. يرجى التحقق من اتصالك لتسجيل حضورك.');
             return;
         }
 
         // Strict Distance Check before submitting
         const currentDistance = getDistance(location, SCHOOL_COORDINATES);
         if (type === 'check-in' && currentDistance > ALLOWED_RADIUS_METERS) {
-            alert(`You are too far to check in. You must be within ${ALLOWED_RADIUS_METERS} meters.`);
+            alert(`أنت بعيد جداً لتسجيل الدخول. يجب أن تكون ضمن مسافة ${ALLOWED_RADIUS_METERS} متر.`);
             return;
         }
 
@@ -182,7 +177,7 @@ export default function CheckInPage() {
             setIsCheckedIn(type === 'check-in');
         } catch (e) {
             console.error(`Failed to ${type}`, e);
-            alert(`There was an error trying to ${type}. Please try again.`);
+            alert(`حدث خطأ أثناء محاولة ${type === 'check-in' ? 'تسجيل الدخول' : 'تسجيل الخروج'}. يرجى المحاولة مرة أخرى.`);
         }
     }, [user, location]);
 
@@ -192,18 +187,18 @@ export default function CheckInPage() {
             case AttendanceStatus.PENDING:
                 return {
                     icon: <IconSpinner className="w-24 h-24 text-slate-400" />,
-                    title: "Locating...",
-                    message: "Acquiring your precise location.",
-                    buttonText: "Please Wait...",
+                    title: "جاري تحديد الموقع...",
+                    message: "يتم الآن الحصول على موقعك الدقيق.",
+                    buttonText: "يرجى الانتظار...",
                     buttonDisabled: true,
                     buttonColor: "bg-slate-400",
                 };
             case AttendanceStatus.ERROR:
                 return {
                     icon: <IconXCircle className="w-24 h-24 text-red-500" />,
-                    title: "Location Error",
+                    title: "خطأ في تحديد الموقع",
                     message: error,
-                    buttonText: "Retry Location",
+                    buttonText: "إعادة المحاولة",
                     buttonDisabled: false,
                     buttonColor: "bg-blue-500 hover:bg-blue-600",
                     onClick: retry,
@@ -211,9 +206,9 @@ export default function CheckInPage() {
             case AttendanceStatus.CHECKED_IN:
                 return {
                     icon: <IconCheckCircle className="w-24 h-24 text-green-500" />,
-                    title: "Checked In",
-                    message: "You are currently present on campus.",
-                    buttonText: "Check Out",
+                    title: "تم تسجيل الدخول",
+                    message: "أنت متواجد حالياً في الحرم الجامعي.",
+                    buttonText: "تسجيل الخروج",
                     buttonDisabled: false,
                     buttonColor: "bg-blue-500 hover:bg-blue-600",
                     onClick: () => handleAttendanceAction('check-out'),
@@ -221,9 +216,9 @@ export default function CheckInPage() {
             case AttendanceStatus.IN_RANGE:
                 return {
                     icon: <ProximityIndicator distance={distance || 0} />,
-                    title: "You're Here!",
-                    message: "You are within the check-in zone.",
-                    buttonText: "Check In Now",
+                    title: "لقد وصلت!",
+                    message: "أنت الآن ضمن منطقة تسجيل الحضور.",
+                    buttonText: "سجل حضورك الآن",
                     buttonDisabled: false,
                     buttonColor: "bg-green-500 hover:bg-green-600 shadow-lg shadow-green-500/30",
                     onClick: () => handleAttendanceAction('check-in'),
@@ -231,9 +226,9 @@ export default function CheckInPage() {
             case AttendanceStatus.OUT_OF_RANGE:
                 return {
                     icon: <ProximityIndicator distance={distance || 999} />,
-                    title: "Out of Range",
-                    message: `Move within ${ALLOWED_RADIUS_METERS}m to check in.`,
-                    buttonText: "Too Far to Check In",
+                    title: "خارج النطاق",
+                    message: `اقترب لمسافة ${ALLOWED_RADIUS_METERS} متر لتسجيل الحضور.`,
+                    buttonText: "بعيد جداً لتسجيل الحضور",
                     buttonDisabled: true,
                     buttonColor: "bg-slate-200 text-slate-400 cursor-not-allowed",
                 };
@@ -244,34 +239,34 @@ export default function CheckInPage() {
     const content = renderStatusContent();
 
     return (
-        <main className="w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 md:p-8 space-y-6 text-center transform transition-all duration-300">
+        <main className="w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl p-8 md:p-10 space-y-8 text-center border border-slate-100">
             {content && (
                 <>
-                    <div className="flex justify-center py-2 scale-100 hover:scale-105 transition-transform duration-300">
+                    <div className="flex justify-center py-4 scale-100 hover:scale-110 transition-transform duration-500">
                         {content.icon}
                     </div>
-                    <div className="space-y-1">
-                        <h2 className="text-2xl font-bold text-slate-800">{content.title}</h2>
-                        <p className="text-slate-500 text-sm font-medium">{content.message}</p>
+                    <div className="space-y-2">
+                        <h2 className="text-3xl font-black text-slate-900 tracking-tight">{content.title}</h2>
+                        <p className="text-slate-500 text-base font-medium leading-relaxed">{content.message}</p>
                     </div>
                 </>
             )}
 
             {/* Technical Details Box */}
-            <div className="bg-slate-50 p-3 rounded-xl text-xs text-slate-500 space-y-1 text-left border border-slate-100">
+            <div className="bg-slate-50/50 p-5 rounded-3xl text-sm text-slate-600 space-y-3 text-right border border-slate-200/50 backdrop-blur-sm">
                 <div className="flex justify-between items-center">
-                    <span className="font-semibold">Status:</span>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${status === AttendanceStatus.IN_RANGE || status === AttendanceStatus.CHECKED_IN ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-600'}`}>
+                    <span className="font-bold">الحالة:</span>
+                    <span className={`px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider ${status === AttendanceStatus.IN_RANGE || status === AttendanceStatus.CHECKED_IN ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-slate-200 text-slate-700 border border-slate-300'}`}>
                         {status}
                     </span>
                 </div>
                  <div className="flex justify-between items-center">
-                    <span className="font-semibold">Distance:</span>
-                    <span className="font-mono">{distance !== null ? `${distance.toFixed(2)}m` : '--'}</span>
+                    <span className="font-bold">المسافة الحالية:</span>
+                    <span className="font-mono font-bold text-slate-800">{distance !== null ? `${distance.toFixed(2)} م` : '--'}</span>
                 </div>
                  <div className="flex justify-between items-center">
-                    <span className="font-semibold">Limit:</span>
-                    <span className="font-mono">{ALLOWED_RADIUS_METERS}m</span>
+                    <span className="font-bold">النطاق المسموح:</span>
+                    <span className="font-mono font-bold text-blue-600">{ALLOWED_RADIUS_METERS} م</span>
                 </div>
             </div>
 
@@ -279,7 +274,7 @@ export default function CheckInPage() {
                 <button
                     onClick={content.onClick}
                     disabled={content.buttonDisabled}
-                    className={`w-full py-3.5 px-6 rounded-xl font-bold text-white shadow-md focus:outline-none focus:ring-4 focus:ring-offset-2 transition-all duration-200 ${content.buttonColor} ${content.buttonDisabled ? '' : 'hover:-translate-y-0.5 active:translate-y-0'}`}
+                    className={`w-full py-4 px-8 rounded-2xl font-black text-lg text-white shadow-xl focus:outline-none focus:ring-4 focus:ring-offset-2 transition-all duration-300 ${content.buttonColor} ${content.buttonDisabled ? 'opacity-50 grayscale' : 'hover:-translate-y-1 hover:shadow-2xl active:translate-y-0 active:scale-95'}`}
                 >
                     {content.buttonText}
                 </button>

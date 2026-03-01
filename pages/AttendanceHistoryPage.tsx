@@ -76,12 +76,12 @@ export default function AttendanceHistoryPage() {
         const recordDate = new Date(dateKey);
 
         if (recordDate.getTime() === today.getTime()) {
-            return 'Today';
+            return 'اليوم';
         }
         if (recordDate.getTime() === yesterday.getTime()) {
-            return 'Yesterday';
+            return 'أمس';
         }
-        return recordDate.toLocaleDateString(undefined, {
+        return recordDate.toLocaleDateString('ar-EG', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
@@ -91,9 +91,9 @@ export default function AttendanceHistoryPage() {
 
     const formatTime = (timestamp: Timestamp) => {
         if (!timestamp || typeof timestamp.toDate !== 'function') {
-            return 'Time unavailable';
+            return 'الوقت غير متاح';
         }
-        return timestamp.toDate().toLocaleTimeString(undefined, {
+        return timestamp.toDate().toLocaleTimeString('ar-EG', {
             hour: 'numeric',
             minute: '2-digit',
         });
@@ -114,35 +114,35 @@ export default function AttendanceHistoryPage() {
     const sortedDateKeys = Object.keys(groupedHistory).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
     return (
-        <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-6">
-            <h2 className="text-2xl font-bold text-slate-800 text-center">Attendance History</h2>
+        <div className="w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl p-8 md:p-10 space-y-8 border border-slate-100">
+            <h2 className="text-3xl font-black text-slate-900 text-center tracking-tight">سجل الحضور</h2>
             {history.length === 0 ? (
-                <p className="text-slate-500 text-center">You have no attendance records yet.</p>
+                <p className="text-slate-500 text-center font-medium">ليس لديك أي سجلات حضور حتى الآن.</p>
             ) : (
-                <div className="space-y-6">
+                <div className="space-y-8">
                     {sortedDateKeys.map((dateKey) => (
-                        <div key={dateKey}>
-                            <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider pb-2 border-b border-slate-200">
+                        <div key={dateKey} className="space-y-4">
+                            <h3 className="text-xs font-black text-blue-600 uppercase tracking-[0.2em] pb-2 border-b-2 border-blue-50">
                                 {getFormattedDateHeader(dateKey)}
                             </h3>
-                            <ul className="divide-y divide-slate-100">
+                            <ul className="divide-y divide-slate-50">
                                 {groupedHistory[dateKey].map((record, index) => (
-                                    <li key={index} className="py-4 flex items-center space-x-4">
+                                    <li key={index} className="py-5 flex items-center gap-4 group hover:bg-slate-50/50 px-2 rounded-2xl transition-all duration-200">
                                         {record.type === 'check-in' ? (
-                                            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                                                <IconCheckIn className="w-6 h-6 text-green-600" />
+                                            <div className="w-12 h-12 rounded-2xl bg-green-50 flex items-center justify-center border border-green-100 shadow-sm group-hover:scale-110 transition-transform">
+                                                <IconCheckIn className="w-7 h-7 text-green-600" />
                                             </div>
                                         ) : (
-                                            <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                                                <IconCheckOut className="w-6 h-6 text-red-600" />
+                                            <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center border border-red-100 shadow-sm group-hover:scale-110 transition-transform">
+                                                <IconCheckOut className="w-7 h-7 text-red-600" />
                                             </div>
                                         )}
                                         <div className="flex-grow">
-                                            <p className="font-semibold text-slate-700 capitalize">
-                                                {record.type === 'check-in' ? 'Checked In' : 'Checked Out'}
+                                            <p className="font-black text-slate-800 text-lg">
+                                                {record.type === 'check-in' ? 'تم تسجيل الدخول' : 'تم تسجيل الخروج'}
                                             </p>
                                         </div>
-                                        <div className="text-sm text-slate-500 font-medium">
+                                        <div className="text-base text-slate-500 font-bold bg-slate-100 px-3 py-1 rounded-lg">
                                             {formatTime(record.timestamp as Timestamp)}
                                         </div>
                                     </li>

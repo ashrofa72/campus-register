@@ -109,12 +109,12 @@ export default function AdminHistoryPage() {
         const recordDate = new Date(dateKey);
 
         if (recordDate.getTime() === today.getTime()) {
-            return 'Today';
+            return 'اليوم';
         }
         if (recordDate.getTime() === yesterday.getTime()) {
-            return 'Yesterday';
+            return 'أمس';
         }
-        return recordDate.toLocaleDateString(undefined, {
+        return recordDate.toLocaleDateString('ar-EG', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
@@ -124,9 +124,9 @@ export default function AdminHistoryPage() {
 
     const formatTime = (timestamp: Timestamp) => {
         if (!timestamp || typeof timestamp.toDate !== 'function') {
-            return 'Time unavailable';
+            return 'الوقت غير متاح';
         }
-        return timestamp.toDate().toLocaleTimeString(undefined, {
+        return timestamp.toDate().toLocaleTimeString('ar-EG', {
             hour: 'numeric',
             minute: '2-digit',
         });
@@ -134,65 +134,77 @@ export default function AdminHistoryPage() {
 
     if (loading) {
         return (
-            <div className="w-full max-w-2xl flex justify-center items-center p-8">
-                 <Spinner className="w-12 h-12 text-blue-500" />
+            <div className="w-full max-w-4xl flex justify-center items-center p-12">
+                 <Spinner className="w-16 h-16 text-blue-500" />
             </div>
         );
     }
 
     if (error) {
-        return <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-6"><p className="text-center text-red-500">{error}</p></div>;
+        return <div className="w-full max-w-4xl bg-white rounded-[2.5rem] shadow-2xl p-10 border border-slate-100"><p className="text-center text-red-500 font-bold">{error}</p></div>;
     }
 
     const sortedDateKeys = Object.keys(groupedHistory).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
     return (
-        <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-6">
-            <h2 className="text-2xl font-bold text-slate-800 text-center">Campus Attendance (Admin)</h2>
+        <div className="w-full max-w-4xl bg-white rounded-[2.5rem] shadow-2xl p-8 md:p-12 space-y-8 border border-slate-100">
+            <div className="text-center space-y-2">
+                <h2 className="text-3xl font-black text-slate-900 tracking-tight">سجل حضور الطلاب (الإدارة)</h2>
+                <p className="text-slate-500 font-medium">مراقبة وإدارة سجلات الحضور لجميع الطلاب</p>
+            </div>
             
-            <div className="relative">
+            <div className="relative group">
+                <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                    </svg>
+                </div>
                 <input
                     type="text"
-                    placeholder="Search by name or email..."
+                    placeholder="البحث بالاسم أو البريد الإلكتروني..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full pr-12 pl-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-medium placeholder:text-slate-400"
                 />
             </div>
 
             {filteredHistory.length === 0 ? (
-                <p className="text-slate-500 text-center">No attendance records found.</p>
+                <div className="text-center py-12 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                    <p className="text-slate-500 font-bold">لم يتم العثور على أي سجلات حضور.</p>
+                </div>
             ) : (
-                <div className="space-y-8">
+                <div className="space-y-10">
                     {sortedDateKeys.map((dateKey) => (
-                        <div key={dateKey}>
-                            <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider pb-2 border-b border-slate-200">
+                        <div key={dateKey} className="space-y-4">
+                            <h3 className="text-xs font-black text-blue-600 uppercase tracking-[0.2em] pb-2 border-b-2 border-blue-50">
                                 {getFormattedDateHeader(dateKey)}
                             </h3>
-                            <ul className="divide-y divide-slate-100">
+                            <ul className="divide-y divide-slate-50">
                                 {groupedHistory[dateKey].map((record, index) => (
-                                    <li key={index} className="py-4 flex items-center space-x-4">
+                                    <li key={index} className="py-6 flex items-center gap-5 group hover:bg-slate-50/50 px-3 rounded-3xl transition-all duration-200">
                                         {record.type === 'check-in' ? (
-                                            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                                                <IconCheckIn className="w-6 h-6 text-green-600" />
+                                            <div className="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center border border-green-100 shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
+                                                <IconCheckIn className="w-8 h-8 text-green-600" />
                                             </div>
                                         ) : (
-                                            <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                                                <IconCheckOut className="w-6 h-6 text-red-600" />
+                                            <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center border border-red-100 shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
+                                                <IconCheckOut className="w-8 h-8 text-red-600" />
                                             </div>
                                         )}
                                         <div className="flex-grow min-w-0">
-                                            <p className="font-semibold text-slate-800 truncate">
-                                                {record.studentName || 'Unknown Student'}
-                                            </p>
-                                            <p className="text-xs text-slate-500 truncate">
+                                            <div className="flex items-center gap-2 mb-0.5">
+                                                <p className="font-black text-slate-900 text-lg truncate">
+                                                    {record.studentName || 'طالب غير معروف'}
+                                                </p>
+                                                <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${record.type === 'check-in' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                    {record.type === 'check-in' ? 'دخول' : 'خروج'}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-slate-500 font-bold truncate">
                                                 {record.studentEmail || record.uid}
                                             </p>
-                                            <p className="text-xs font-medium text-slate-400 mt-0.5">
-                                                {record.type === 'check-in' ? 'Checked In' : 'Checked Out'}
-                                            </p>
                                         </div>
-                                        <div className="text-sm text-slate-500 font-medium whitespace-nowrap">
+                                        <div className="text-base text-slate-600 font-black bg-white border border-slate-100 shadow-sm px-4 py-2 rounded-xl whitespace-nowrap">
                                             {formatTime(record.timestamp as Timestamp)}
                                         </div>
                                     </li>

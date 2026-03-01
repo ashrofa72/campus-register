@@ -19,7 +19,7 @@ export default function LoginPage() {
         setError('');
 
         if (!navigator.onLine) {
-            setError('You seem to be offline. Please check your connection and try again.');
+            setError('يبدو أنك غير متصل بالإنترنت. يرجى التحقق من اتصالك والمحاولة مرة أخرى.');
             setLoading(false);
             return;
         }
@@ -27,14 +27,14 @@ export default function LoginPage() {
         try {
             if (isLoginView) {
                 if (!email || !password) {
-                    setError('Please enter both email and password.');
+                    setError('يرجى إدخال البريد الإلكتروني وكلمة المرور.');
                     setLoading(false);
                     return;
                 }
                 await signIn(email, password);
             } else {
                 if (!displayName || !email || !password) {
-                    setError('Please fill in all fields.');
+                    setError('يرجى ملء جميع الحقول.');
                     setLoading(false);
                     return;
                 }
@@ -43,21 +43,21 @@ export default function LoginPage() {
         } catch (err: any) {
             switch (err.code) {
                 case 'auth/invalid-email':
-                    setError('Please enter a valid email address.');
+                    setError('يرجى إدخال بريد إلكتروني صحيح.');
                     break;
                 case 'auth/user-not-found':
                 case 'auth/invalid-credential':
                 case 'auth/wrong-password':
-                     setError('Invalid email or password.');
+                     setError('البريد الإلكتروني أو كلمة المرور غير صحيحة.');
                      break;
                 case 'auth/email-already-in-use':
-                    setError('An account with this email already exists.');
+                    setError('هذا الحساب موجود بالفعل.');
                     break;
                 case 'auth/weak-password':
-                    setError('Password should be at least 6 characters long.');
+                    setError('يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.');
                     break;
                 default:
-                    setError('An unexpected error occurred. Please try again.');
+                    setError('حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.');
                     break;
             }
             console.error(err);
@@ -75,79 +75,89 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-100 p-4 font-sans">
-            <header className="text-center mb-8">
-                <h1 className="text-3xl md:text-4xl font-bold text-slate-800">Campus Check-In</h1>
-                <p className="text-slate-500 mt-1">Smart Attendance System</p>
+        <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 p-4 font-sans selection:bg-blue-100">
+            <header className="text-center mb-10 space-y-2">
+                <div className="inline-block px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-xs font-black uppercase tracking-widest mb-4 border border-blue-100">
+                    نظام ذكي • آمن • سريع
+                </div>
+                <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">تسجيل الحضور</h1>
+                <p className="text-slate-500 text-lg font-medium">نظام الحضور الذكي للحرم الجامعي</p>
             </header>
-            <main className="w-full max-w-sm bg-white rounded-2xl shadow-xl p-8">
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="text-center">
-                        <h2 className="text-2xl font-bold text-slate-800">{isLoginView ? 'Welcome Back!' : 'Create an Account'}</h2>
-                        <p className="text-slate-500">{isLoginView ? 'Please sign in to continue.' : 'Fill in the details to sign up.'}</p>
+            <main className="w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl p-10 border border-slate-100">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="text-center space-y-2 mb-8">
+                        <h2 className="text-3xl font-black text-slate-800">{isLoginView ? 'مرحباً بعودتك!' : 'إنشاء حساب جديد'}</h2>
+                        <p className="text-slate-500 font-medium leading-relaxed">{isLoginView ? 'يرجى تسجيل الدخول للمتابعة إلى حسابك.' : 'املأ البيانات التالية لإنشاء حسابك الجديد.'}</p>
                     </div>
                     
                     {!isLoginView && (
-                        <div>
-                            <label htmlFor="displayName" className="sr-only">Full Name</label>
+                        <div className="space-y-1">
+                            <label htmlFor="displayName" className="text-sm font-bold text-slate-700 mr-1">الاسم الكامل</label>
                             <input
                                 type="text"
                                 id="displayName"
                                 value={displayName}
                                 onChange={(e) => setDisplayName(e.target.value)}
-                                placeholder="Full Name"
-                                className="w-full px-4 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="أدخل اسمك الكامل"
+                                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400 font-medium"
                                 required={!isLoginView}
                             />
                         </div>
                     )}
 
-                    <div>
-                        <label htmlFor="email" className="sr-only">Email</label>
+                    <div className="space-y-1">
+                        <label htmlFor="email" className="text-sm font-bold text-slate-700 mr-1">البريد الإلكتروني</label>
                         <input
                             type="email"
                             id="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Email Address"
+                            placeholder="example@email.com"
                             autoComplete="email"
-                            className="w-full px-4 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400 font-medium"
                             required
                         />
                     </div>
 
-                    <div>
-                        <label htmlFor="password" className="sr-only">Password</label>
+                    <div className="space-y-1">
+                        <label htmlFor="password" className="text-sm font-bold text-slate-700 mr-1">كلمة المرور</label>
                         <input
                             type="password"
                             id="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Password"
+                            placeholder="••••••••"
                             autoComplete={isLoginView ? "current-password" : "new-password"}
-                            className="w-full px-4 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400 font-medium"
                             required
                         />
                     </div>
                      
-                    {error && <p className="text-red-500 text-xs text-left">{error}</p>}
+                    {error && (
+                        <div className="bg-red-50 border border-red-100 p-3 rounded-xl flex items-center gap-2 text-red-600 text-sm font-bold">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
+                            </svg>
+                            {error}
+                        </div>
+                    )}
 
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full flex justify-center items-center py-3 px-6 rounded-lg font-semibold text-white bg-blue-500 hover:bg-blue-600 shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-150 disabled:bg-blue-300 disabled:cursor-not-allowed"
+                        className="w-full flex justify-center items-center py-4 px-6 rounded-2xl font-black text-lg text-white bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-500/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 hover:-translate-y-1 active:translate-y-0 active:scale-95 disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed"
                     >
-                        {loading ? <Spinner className="w-5 h-5" /> : (isLoginView ? 'Sign In' : 'Sign Up')}
+                        {loading ? <Spinner className="w-6 h-6" /> : (isLoginView ? 'تسجيل الدخول' : 'إنشاء حساب')}
                     </button>
                 </form>
-                <div className="mt-6 text-sm text-center">
-                    <button onClick={toggleView} className="font-medium text-blue-600 hover:text-blue-500">
-                        {isLoginView ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
+                <div className="mt-8 text-sm text-center">
+                    <button onClick={toggleView} className="font-bold text-blue-600 hover:text-blue-500 transition-colors underline underline-offset-4 decoration-blue-200 hover:decoration-blue-500">
+                        {isLoginView ? "ليس لديك حساب؟ سجل الآن مجاناً" : "لديك حساب بالفعل؟ سجل دخولك الآن"}
                     </button>
                 </div>
             </main>
-             <footer className="text-center mt-8 text-sm text-slate-400">
-                <p>&copy; {new Date().getFullYear()} Campus Check-In. All rights reserved.</p>
+             <footer className="text-center mt-12 text-sm text-slate-400 font-medium">
+                <p>&copy; {new Date().getFullYear()} تسجيل الحضور في الحرم الجامعي. جميع الحقوق محفوظة.</p>
             </footer>
         </div>
     );

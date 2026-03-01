@@ -42,7 +42,7 @@ export default function ProfilePage({ isEditing = false, onCancel }: ProfilePage
             // Firestore documents are limited to 1MB. Base64 encoding adds ~33% overhead.
             // We limit input files to 750KB to ensure the entire profile document fits safely.
             if (file.size > 750 * 1024) {
-                setError("Image size too large. For direct storage, please use an image under 750KB.");
+                setError("حجم الصورة كبير جداً. يرجى استخدام صورة أقل من 750 كيلوبايت.");
                 return;
             }
             
@@ -54,7 +54,7 @@ export default function ProfilePage({ isEditing = false, onCancel }: ProfilePage
                 }
             };
             reader.onerror = () => {
-                setError("Failed to read image file.");
+                setError("فشل في قراءة ملف الصورة.");
             };
             reader.readAsDataURL(file);
         }
@@ -68,14 +68,14 @@ export default function ProfilePage({ isEditing = false, onCancel }: ProfilePage
         e.preventDefault();
         if (!user) return;
         if (!studentName.trim() || !studentCode.trim() || !studentClassroom.trim()) {
-            setError('Name, Code, and Classroom are required.');
+            setError('الاسم والكود والفصل الدراسي حقول مطلوبة.');
             return;
         }
         setLoading(true);
         setError('');
 
         if (!navigator.onLine) {
-            setError('You seem to be offline. Please check your connection and try again.');
+            setError('يبدو أنك غير متصل بالإنترنت. يرجى التحقق من اتصالك والمحاولة مرة أخرى.');
             setLoading(false);
             return;
         }
@@ -106,45 +106,45 @@ export default function ProfilePage({ isEditing = false, onCancel }: ProfilePage
             await reloadProfile(); 
             
             if (isEditing) {
-                alert('Profile updated successfully!');
+                alert('تم تحديث الملف الشخصي بنجاح!');
                 if (onCancel) onCancel();
             }
         } catch (err: any) {
             console.error("Failed to update profile", err);
-            setError(err.message || 'Failed to save profile. Please try again.');
+            setError(err.message || 'فشل في حفظ الملف الشخصي. يرجى المحاولة مرة أخرى.');
         } finally {
             setLoading(false);
         }
     };
 
     const containerClasses = isEditing 
-        ? "w-full max-w-lg bg-white rounded-3xl shadow-2xl p-6 md:p-8" 
-        : "min-h-screen w-full flex flex-col items-center justify-center bg-slate-100 p-4 font-sans";
+        ? "w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl p-8 md:p-12 border border-slate-100" 
+        : "min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 p-4 font-sans";
 
     const formContent = (
-        <main className={isEditing ? "" : "w-full max-w-sm bg-white rounded-2xl shadow-xl p-8 text-center"}>
-            <form onSubmit={handleSubmit} className="space-y-4 text-left">
-                <div className="space-y-2 text-center mb-6">
-                    <h2 className="text-2xl font-bold text-slate-800">
-                        {isEditing ? 'Edit Profile' : 'Complete Your Profile'}
+        <main className={isEditing ? "" : "w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl p-10 text-center border border-slate-100"}>
+            <form onSubmit={handleSubmit} className="space-y-6 text-right">
+                <div className="space-y-2 text-center mb-8">
+                    <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+                        {isEditing ? 'تعديل الملف الشخصي' : 'إكمال الملف الشخصي'}
                     </h2>
                     {!isEditing && (
-                        <p className="text-slate-500 pb-2">
-                            Welcome, {user?.displayName}! Please enter your details to finish setting up your account.
+                        <p className="text-slate-500 font-medium leading-relaxed">
+                            مرحباً، {user?.displayName}! يرجى إدخال بياناتك لإكمال إعداد حسابك.
                         </p>
                     )}
                 </div>
 
                 {/* Avatar Upload Section */}
-                <div className="flex flex-col items-center mb-6 space-y-3">
+                <div className="flex flex-col items-center mb-8 space-y-4">
                     <div className="relative group cursor-pointer" onClick={triggerFileInput}>
                         <img 
                             src={previewUrl || `https://ui-avatars.com/api/?name=${studentName || 'User'}&background=random`} 
                             alt="Avatar Preview"
-                            className="w-24 h-24 rounded-full object-cover border-4 border-slate-100 shadow-md bg-slate-200 transition-opacity group-hover:opacity-75"
+                            className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-xl bg-slate-200 transition-all duration-300 group-hover:opacity-90 group-hover:scale-105"
                         />
-                        <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all">
-                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute inset-0 flex items-center justify-center rounded-full bg-blue-600 bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300">
+                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
                             </svg>
@@ -160,69 +160,76 @@ export default function ProfilePage({ isEditing = false, onCancel }: ProfilePage
                     <button 
                         type="button"
                         onClick={triggerFileInput}
-                        className="text-sm text-blue-600 font-medium hover:text-blue-500"
+                        className="text-sm text-blue-600 font-black hover:text-blue-500 transition-colors underline underline-offset-4 decoration-blue-200"
                     >
-                        Change Profile Picture
+                        تغيير الصورة الشخصية
                     </button>
                 </div>
                 
-                <div>
-                    <label htmlFor="studentName" className="block text-sm font-medium text-slate-700 mb-1">Student Name</label>
+                <div className="space-y-1">
+                    <label htmlFor="studentName" className="block text-sm font-bold text-slate-700 mr-1">اسم الطالب</label>
                     <input
                         type="text"
                         id="studentName"
                         value={studentName}
                         onChange={(e) => setStudentName(e.target.value)}
-                        placeholder="Enter your full name"
-                        className="w-full px-4 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="أدخل اسمك الكامل"
+                        className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-medium"
                         required
                     />
                 </div>
                 
-                <div>
-                    <label htmlFor="studentCode" className="block text-sm font-medium text-slate-700 mb-1">Student Code</label>
+                <div className="space-y-1">
+                    <label htmlFor="studentCode" className="block text-sm font-bold text-slate-700 mr-1">كود الطالب</label>
                     <input
                         type="text"
                         id="studentCode"
                         value={studentCode}
                         onChange={(e) => setStudentCode(e.target.value)}
-                        placeholder="Enter your student code"
-                        className="w-full px-4 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="أدخل كود الطالب الخاص بك"
+                        className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-medium"
                         required
                     />
                 </div>
 
-                <div>
-                    <label htmlFor="studentClassroom" className="block text-sm font-medium text-slate-700 mb-1">Classroom</label>
+                <div className="space-y-1">
+                    <label htmlFor="studentClassroom" className="block text-sm font-bold text-slate-700 mr-1">الفصل الدراسي</label>
                     <input
                         type="text"
                         id="studentClassroom"
                         value={studentClassroom}
                         onChange={(e) => setStudentClassroom(e.target.value)}
-                        placeholder="e.g., Class 5B"
-                        className="w-full px-4 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="مثال: فصل 5ب"
+                        className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-medium"
                         required
                     />
                 </div>
 
-                {error && <p className="text-red-500 text-xs text-left">{error}</p>}
+                {error && (
+                    <div className="bg-red-50 border border-red-100 p-3 rounded-xl flex items-center gap-2 text-red-600 text-sm font-bold">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
+                        </svg>
+                        {error}
+                    </div>
+                )}
                 
-                <div className="flex space-x-3 pt-4">
+                <div className="flex gap-4 pt-6">
                     {isEditing && (
                         <button
                             type="button"
                             onClick={onCancel}
-                            className="flex-1 py-3 px-4 rounded-lg font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                            className="flex-1 py-4 px-6 rounded-2xl font-black text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all active:scale-95"
                         >
-                            Cancel
+                            إلغاء
                         </button>
                     )}
                     <button
                         type="submit"
                         disabled={loading}
-                        className="flex-1 flex justify-center items-center py-3 px-4 rounded-lg font-semibold text-white bg-blue-500 hover:bg-blue-600 shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-150 disabled:bg-blue-300 disabled:cursor-not-allowed"
+                        className="flex-1 flex justify-center items-center py-4 px-6 rounded-2xl font-black text-lg text-white bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-500/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 hover:-translate-y-1 active:translate-y-0 active:scale-95 disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed"
                     >
-                        {loading ? <Spinner className="w-5 h-5" /> : 'Save Profile'}
+                        {loading ? <Spinner className="w-6 h-6" /> : 'حفظ الملف الشخصي'}
                     </button>
                 </div>
             </form>
@@ -235,13 +242,13 @@ export default function ProfilePage({ isEditing = false, onCancel }: ProfilePage
 
     return (
         <div className={containerClasses}>
-             <header className="text-center mb-8">
-                <h1 className="text-3xl md:text-4xl font-bold text-slate-800">Campus Check-In</h1>
-                <p className="text-slate-500 mt-1">Smart Attendance System</p>
+             <header className="text-center mb-10 space-y-2">
+                <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">تسجيل الحضور</h1>
+                <p className="text-slate-500 text-lg font-medium">نظام الحضور الذكي للحرم الجامعي</p>
             </header>
             {formContent}
-             <footer className="text-center mt-8 text-sm text-slate-400">
-                <p>&copy; {new Date().getFullYear()} Campus Check-In. All rights reserved.</p>
+             <footer className="text-center mt-12 text-sm text-slate-400 font-medium">
+                <p>&copy; {new Date().getFullYear()} تسجيل الحضور في الحرم الجامعي. جميع الحقوق محفوظة.</p>
             </footer>
         </div>
     );

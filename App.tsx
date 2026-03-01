@@ -55,7 +55,7 @@ export default function App() {
                         />
                     )}
                     <footer className="text-center mt-8 text-sm text-slate-400">
-                        <p>&copy; {new Date().getFullYear()} Campus Check-In. All rights reserved.</p>
+                        <p>&copy; {new Date().getFullYear()} تسجيل الحضور في الحرم الجامعي. جميع الحقوق محفوظة.</p>
                     </footer>
                 </main>
             </div>

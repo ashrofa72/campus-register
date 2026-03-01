@@ -7,12 +7,12 @@ export type Coordinates = {
 };
 
 export enum AttendanceStatus {
-  CHECKED_IN = 'Checked In',
-  CHECKED_OUT = 'Checked Out',
-  IN_RANGE = 'In Range',
-  OUT_OF_RANGE = 'Out of Range',
-  PENDING = 'Acquiring Location...',
-  ERROR = 'Location Error',
+  CHECKED_IN = 'تم تسجيل الدخول',
+  CHECKED_OUT = 'تم تسجيل الخروج',
+  IN_RANGE = 'داخل النطاق',
+  OUT_OF_RANGE = 'خارج النطاق',
+  PENDING = 'جاري تحديد الموقع...',
+  ERROR = 'خطأ في تحديد الموقع',
 }
 
 export type StudentProfile = {

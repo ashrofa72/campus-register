@@ -7,7 +7,7 @@ const OfflineBanner = () => {
             role="status"
             aria-live="polite"
         >
-            You are currently offline. Some features may be limited.
+            أنت حالياً غير متصل بالإنترنت. قد تكون بعض الميزات محدودة.
         </div>
     );
 };
