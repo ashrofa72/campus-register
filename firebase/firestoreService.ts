@@ -99,10 +99,12 @@ export const updateUserProfile = async (uid:string, data: Partial<StudentProfile
 };
 
 
-export const logAttendance = async (uid: string, type: 'check-in' | 'check-out', coordinates: Coordinates): Promise<void> => {
+export const logAttendance = async (uid: string, type: 'check-in' | 'check-out', coordinates: Coordinates, studentName?: string, studentEmail?: string): Promise<void> => {
     const attendanceCollectionRef = collection(db, 'attendance');
     const newRecord = {
         uid,
+        studentName: studentName || null,
+        studentEmail: studentEmail || null,
         type,
         coordinates,
         timestamp: serverTimestamp(),
@@ -150,6 +152,34 @@ export const getAttendanceHistory = async (uid: string): Promise<AttendanceRecor
     );
 
     const querySnapshot = await getDocs(q);
+    const history: AttendanceRecord[] = [];
+    querySnapshot.forEach((doc) => {
+        history.push(doc.data() as AttendanceRecord);
+    });
+
+    // Sort records by timestamp descending on the client.
+    history.sort((a, b) => {
+        const timeA = a.timestamp?.toDate ? a.timestamp.toDate().getTime() : 0;
+        const timeB = b.timestamp?.toDate ? b.timestamp.toDate().getTime() : 0;
+        return timeB - timeA;
+    });
+
+    return history;
+};
+
+export const getAllStudentProfiles = async (): Promise<StudentProfile[]> => {
+    const studentsCollectionRef = collection(db, 'students');
+    const querySnapshot = await getDocs(studentsCollectionRef);
+    const profiles: StudentProfile[] = [];
+    querySnapshot.forEach((doc) => {
+        profiles.push(doc.data() as StudentProfile);
+    });
+    return profiles;
+};
+
+export const getAllAttendanceHistory = async (): Promise<AttendanceRecord[]> => {
+    const attendanceCollectionRef = collection(db, 'attendance');
+    const querySnapshot = await getDocs(attendanceCollectionRef);
     const history: AttendanceRecord[] = [];
     querySnapshot.forEach((doc) => {
         history.push(doc.data() as AttendanceRecord);

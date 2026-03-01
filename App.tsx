@@ -8,12 +8,13 @@ import Spinner from './components/Spinner';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import OfflineBanner from './components/OfflineBanner';
 import AttendanceHistoryPage from './pages/AttendanceHistoryPage';
+import AdminHistoryPage from './pages/AdminHistoryPage';
 
 
 export default function App() {
     const { user, loading, profileLoading } = useAuth();
     const isOnline = useOnlineStatus();
-    const [currentPage, setCurrentPage] = useState<'checkin' | 'history' | 'profile'>('checkin');
+    const [currentPage, setCurrentPage] = useState<'checkin' | 'history' | 'profile' | 'admin'>('checkin');
 
     const renderContent = () => {
         if (loading || profileLoading) {
@@ -36,7 +37,7 @@ export default function App() {
         // This is a critical check to prevent two scenarios:
         // 1. An existing user with a complete profile is not blocked or redirected just because they are temporarily offline.
         // 2. A new user is not sent to a non-functional profile page while they are offline.
-        if (needsProfileCompletion && isOnline) {
+        if (needsProfileCompletion && isOnline && user.profile?.role !== 'admin') {
             return <ProfilePage />;
         }
 
@@ -46,6 +47,7 @@ export default function App() {
                 <main className="flex-grow w-full flex flex-col items-center justify-center p-4">
                     {currentPage === 'checkin' && <CheckInPage />}
                     {currentPage === 'history' && <AttendanceHistoryPage />}
+                    {currentPage === 'admin' && user.profile?.role === 'admin' && <AdminHistoryPage />}
                     {currentPage === 'profile' && (
                         <ProfilePage 
                             isEditing={true} 

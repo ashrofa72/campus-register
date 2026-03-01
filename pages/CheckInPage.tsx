@@ -172,7 +172,13 @@ export default function CheckInPage() {
         }
 
         try {
-            await logAttendance(user.uid, type, location);
+            await logAttendance(
+                user.uid, 
+                type, 
+                location, 
+                user.profile?.studentName || user.displayName || undefined,
+                user.profile?.email || user.email || undefined
+            );
             setIsCheckedIn(type === 'check-in');
         } catch (e) {
             console.error(`Failed to ${type}`, e);

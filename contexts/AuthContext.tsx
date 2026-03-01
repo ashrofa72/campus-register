@@ -54,6 +54,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             
             // Only attach profile if it exists
             if (profile) {
+                // Check for admin role based on email
+                if (firebaseUser.email === 'as.ka1@hotmail.com') {
+                    profile.role = 'admin';
+                } else if (!profile.role) {
+                    profile.role = 'student';
+                }
                 setUser({ ...firebaseUser, profile });
             } else {
                 setUser(firebaseUser);

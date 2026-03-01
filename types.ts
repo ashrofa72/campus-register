@@ -23,6 +23,7 @@ export type StudentProfile = {
   studentCode?: string;
   studentName?: string;
   studentClassroom?: string;
+  role?: 'admin' | 'student';
   createdAt: Timestamp;
 };
 
@@ -32,6 +33,8 @@ export type AppUser = FirebaseUser & {
 
 export type AttendanceRecord = {
     uid: string;
+    studentName?: string;
+    studentEmail?: string;
     timestamp: Timestamp;
     type: 'check-in' | 'check-out';
     coordinates: Coordinates;

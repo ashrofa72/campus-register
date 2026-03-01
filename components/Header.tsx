@@ -2,16 +2,17 @@ import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
 interface HeaderProps {
-    currentPage: 'checkin' | 'history' | 'profile';
-    setCurrentPage: (page: 'checkin' | 'history' | 'profile') => void;
+    currentPage: 'checkin' | 'history' | 'profile' | 'admin';
+    setCurrentPage: (page: 'checkin' | 'history' | 'profile' | 'admin') => void;
 }
 
 export default function Header({ currentPage, setCurrentPage }: HeaderProps) {
     const { user, signOut } = useAuth();
     const displayName = user?.profile?.studentName || user?.displayName;
     const photoURL = user?.profile?.photoURL || user?.photoURL;
+    const isAdmin = user?.profile?.role === 'admin';
 
-    const navLinkClasses = (page: 'checkin' | 'history') => 
+    const navLinkClasses = (page: 'checkin' | 'history' | 'admin') => 
         `px-3 py-1.5 text-sm font-semibold rounded-md transition-colors ${
             currentPage === page 
             ? 'bg-blue-500 text-white shadow-sm' 
@@ -32,6 +33,11 @@ export default function Header({ currentPage, setCurrentPage }: HeaderProps) {
                         <button onClick={() => setCurrentPage('history')} className={navLinkClasses('history')}>
                             History
                         </button>
+                        {isAdmin && (
+                            <button onClick={() => setCurrentPage('admin')} className={navLinkClasses('admin')}>
+                                Admin
+                            </button>
+                        )}
                     </nav>
                 </div>
                 {user && (
@@ -64,6 +70,11 @@ export default function Header({ currentPage, setCurrentPage }: HeaderProps) {
                 <button onClick={() => setCurrentPage('history')} className={`${navLinkClasses('history')} flex-1`}>
                     History
                 </button>
+                {isAdmin && (
+                    <button onClick={() => setCurrentPage('admin')} className={`${navLinkClasses('admin')} flex-1`}>
+                        Admin
+                    </button>
+                )}
             </nav>
         </header>
     );
